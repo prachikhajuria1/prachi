@@ -1,0 +1,160 @@
+//Write a program to evaluate Infix expression using Stacks.
+
+// Header files
+#include<stdio.h>
+#include<stdlib.h>
+#include<ctype.h>
+#include<string.h>
+
+//Global variables
+int numbers[50],tn=-1,to=-1;
+char op[50];
+//Function to push digits
+void push_num(int n)
+{
+numbers[++tn]=n;
+}
+//Function to push operators
+void push_op(char ch)
+{
+op[++to]=ch;
+}
+// Function to pop digits
+int pop_num()
+{
+return numbers[tn--];
+}
+//Function to pop operators
+char pop_op()
+{
+return op[to--];
+}
+//Evaluating the expression
+int infix_eval(int numbers[50], char op[50])
+{
+int x, y;
+char ope;
+//Taking first two operands
+x=pop_num();
+y=pop_num();
+//Taking the operators between them
+ope=pop_op();
+//Executing the operation
+switch(ope)
+{
+case '+':
+    return x+y;
+case '-':
+    return y-x;
+case '*':
+    return x*y;
+case '/':
+    if(x==0)
+    {
+        printf("\n cannot divide by 0");
+        exit(0);
+    }
+    else
+        return y/x;
+}
+return 0;
+}
+//Function to check whether the character is an operator or not
+int is_operator(char ch)
+{
+    return (ch=='+'||ch=='-'||ch=='*'||ch=='/'||ch=='^');
+}
+// Precedence of the operators
+int precedence (char c)
+{
+    switch (c)
+    {
+    case '+':
+        return 1;
+    case '-':
+        return 1;
+    case '*':
+        return 2;
+    case '/':
+        return 2;
+    case '^':
+        return 3;
+    }
+    return -1;
+}
+//Function to evaluate an infix expression
+int eval(char exp[20])
+{
+    int i, num, output,r;
+    char c;
+    for (i=0;exp[i]!='\0';i++)
+    {
+        //Taking each character from the expression
+        c = exp[i];
+       //Checking if it is number
+       if(isdigit(c)!=0)
+       {
+           num = 0;
+           while (isdigit(c))
+           {
+               num = num*10 + (c-'0');
+               i++;
+               if (i<strlen(exp))
+                c = exp[i];
+               else
+                break;
+           }
+           i--;
+           //Pushing the number into stack of numbers
+           push_num(num);
+       }
+       else if(c=='(')
+       {
+           //pushing the operators into the stack
+           push_op(c);
+       }
+       //If we get close bracket, evaluate the entire brackets
+       else if(c==')')
+       {
+           while (op[to]!='(')
+           {
+               r = infix_eval (numbers, op);
+               //Pushing the result back to stack
+               push_num(r);
+           }
+           pop_op();
+       }
+       //If the current character is operator
+       else if (is_operator(c))
+       {
+           //Evaluating the expression
+           while (to!=-1 && precedence (c)<= precedence(op[to]))
+           {
+               output = infix_eval(numbers,op);
+               //Pushing the result back to stack
+               push_num(output);
+           }
+           //Pushing the current operator to stack
+           push_op(c);
+       }
+    }
+    //If there is any remaining expression, evaluate them
+    while(to!=-1)
+    {
+        output = infix_eval(numbers,op);
+        //Pushing it back to stack
+        push_num(output);
+    }
+    return pop_num();
+}
+//Main function
+int main()
+{
+    char exp[50];
+    //Taking the expression to evaluate
+    printf("Enter the infix expression to evaluate:");
+    gets(exp);
+    //Calling the function and printing the result
+      printf("%d",eval(exp));
+    return 0;   //*End of program
+}
